@@ -2,14 +2,14 @@
 {
 "Id": 1,
 "Descr": "this",
-"Status": "todo",
+"Status": "in-progress",
 "TimeCreated": {},
 "TimeUpdated": {}
 },
 {
-"Id": 2,
-"Descr": "that",
-"Status": "in-progress",
+"Id": 3,
+"Descr": "This thing to do",
+"Status": "todo",
 "TimeCreated": {},
 "TimeUpdated": {}
 }

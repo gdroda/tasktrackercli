@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -9,13 +8,15 @@ import (
 	"time"
 )
 
-// Text Colors
-var Green = "\033[32m"
+type application struct {
+}
 
 var taskList []task
 
 func main() {
-	loadList()
+	app := &application{}
+
+	app.loadList()
 
 	arg := os.Args[1:]
 	getInput(arg)
@@ -48,14 +49,15 @@ func getInput(inp []string) {
 		fmt.Printf("Task '%s' added successfully (ID: %d).\n", tmp, tmpId)
 
 	case "delete":
-		tmp := capitalizeFirst(inp[1])
-		i, err := strconv.Atoi(inp[1])
-		fmt.Println(taskList[i].Id) ///do like here
+		ind, err := strconv.Atoi(inp[1])
 		if err != nil {
 			fmt.Println("hi")
 		}
-		taskList = append(taskList[:i], taskList[i+1:]...)
-		fmt.Printf("'%s' has been deleted from the list.\n", tmp)
+		for i := 0; i < len(taskList); i++ {
+			if taskList[i].Id == ind {
+				taskList = append(taskList[:i], taskList[i+1:]...)
+			}
+		}
 
 	case "mark-in-progress":
 		ind, err := strconv.Atoi(inp[1])
@@ -84,12 +86,12 @@ func getInput(inp []string) {
 		case "todo":
 			fmt.Println("- Printing TO-DO Tasks -")
 		case "in-progress":
-			fmt.Println("Printing all in progress tasks.")
+			fmt.Println("- Printing In Progress Tasks -")
 		case "":
 			fmt.Println("- Printing All Tasks -")
 		}
 
-		fmt.Println(" ID    Description     Status")
+		fmt.Println(" ID    Description               Status")
 
 		// For switch for list printing
 		for i := 0; i < len(taskList); i++ {
@@ -101,10 +103,9 @@ func getInput(inp []string) {
 					listPrint(taskList[i])
 				}
 			case "in-progress":
-				if taskList[i].Status == "todo" {
+				if taskList[i].Status == "in-progress" {
 					listPrint(taskList[i])
 				}
-				fmt.Println("Printing all in progress tasks.")
 			case "":
 				listPrint(taskList[i])
 			default:
@@ -117,45 +118,9 @@ func getInput(inp []string) {
 		invalidCommand()
 	}
 
-	saveList()
+	app := &application{}
+	app.saveList()
 
-}
-
-func saveList() {
-	file, err := os.Create("tasks.json")
-	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
-	}
-	defer file.Close()
-
-	b, err := json.MarshalIndent(taskList, "", "")
-	if err != nil {
-		fmt.Println("Error marshaling file:", err)
-		return
-	}
-
-	_, err = file.Write(b)
-	if err != nil {
-		fmt.Println("Error writing file:", err)
-	}
-	fmt.Println("Data saved")
-}
-
-func loadList() {
-	file, err := os.Open("tasks.json")
-	if err != nil {
-		fmt.Println("Error opening file", err)
-		return
-	}
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&taskList)
-	if err != nil {
-		fmt.Println("Error decoding JSON", err)
-		return
-	}
 }
 
 func invalidCommand() {
@@ -163,7 +128,7 @@ func invalidCommand() {
 }
 
 func listPrint(t task) {
-	fmt.Printf(" %03d   %s            %s\n", t.Id, t.Descr, t.Status)
+	fmt.Printf(" %03d   %-23s   %-15s\n", t.Id, t.Descr, t.Status)
 }
 
 func getTime(t timeStruct) {
