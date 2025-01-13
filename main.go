@@ -35,7 +35,7 @@ func getInput() string {
 		os.Exit(0)
 	case "add":
 		tmp := capitalizeFirst(slicedString[1])
-		fmt.Printf("Task '%s' added successfully (ID: 1).\n", tmp)
+		fmt.Printf("Task '%s' added successfully (ID: 2).\n", tmp)
 	case "delete":
 		tmp := capitalizeFirst(slicedString[1])
 		fmt.Printf("'%s' has been deleted from the list.\n", tmp)
