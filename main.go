@@ -71,7 +71,15 @@ func getInput(inp []string) {
 		}
 
 	case "mark-done":
-		fmt.Println("markdone")
+		ind, err := strconv.Atoi(inp[1])
+		if err != nil {
+			fmt.Println("Could not parse to int", err)
+		}
+		for i := 0; i < len(taskList); i++ {
+			if taskList[i]. Id = ind {
+				taskList[i].Status = "done"
+			}
+		}
 
 	case "list":
 		if len(inp) < 2 {
