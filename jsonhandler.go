@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 )
 
 func (app *application) saveList() {
-	file, err := os.Create("tasks.json")
+	userprofile := os.Getenv("USERPROFILE")
+	file, err := os.Create(path.Join(userprofile, "tasks.json"))
 	if err != nil {
 		fmt.Println("Error creating file:", err)
 		return
@@ -24,11 +26,15 @@ func (app *application) saveList() {
 	if err != nil {
 		fmt.Println("Error writing file:", err)
 	}
-	fmt.Println("Data saved")
 }
 
 func (app *application) loadList() {
-	file, err := os.Open("tasks.json")
+	userprofile := os.Getenv("USERPROFILE")
+	file, err := os.Open(path.Join(userprofile, "tasks.json"))
+	if file == nil {
+		app.saveList()
+		return
+	}
 	if err != nil {
 		fmt.Println("Error opening file", err)
 		return

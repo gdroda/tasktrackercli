@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -24,146 +22,66 @@ func main() {
 }
 
 func getInput(inp []string) {
-	if len(inp) < 2 && inp[0] != "list" {
+	if len(inp) < 1 {
+		invalidCommand()
+		return
+	} else if len(inp) < 2 && inp[0] != "list" {
+		invalidCommand()
+		return
+	} else if len(inp) > 2 {
 		invalidCommand()
 		return
 	}
 
-	var t task
+	app := &application{}
 
 	switch inp[0] {
 
+	// Add command
 	case "add":
-		tmp := capitalizeFirst(inp[1])
-		var tmpId int
-		if len(taskList) > 0 {
-			tmpId = taskList[len(taskList)-1].Id + 1
-		} else {
-			tmpId = 1
-		}
+		app.addTask(inp)
 
-		tmpTime := timeStruct{int64(time.Now().Year()), int64(time.Now().Month()), int64(time.Now().Day()), int64(time.Now().Hour()), int64(time.Now().Minute()), int64(time.Now().Second())}
-		getTime(tmpTime)
-		t = task{tmpId, inp[1], "todo", tmpTime, tmpTime}
-		taskList = append(taskList, t)
-		fmt.Printf("Task '%s' added successfully (ID: %d).\n", tmp, tmpId)
-
+	// Delete command
 	case "delete":
-		ind, err := strconv.Atoi(inp[1])
-		if err != nil {
-			fmt.Println("hi")
-		}
-		for i := 0; i < len(taskList); i++ {
-			if taskList[i].Id == ind {
-				taskList = append(taskList[:i], taskList[i+1:]...)
-			}
-		}
+		app.deleteTask(inp)
 
-	case "mark-in-progress":
-		ind, err := strconv.Atoi(inp[1])
-		if err != nil {
-			fmt.Println("Could not parse to int.")
-		}
-		for i := 0; i < len(taskList); i++ {
-			if taskList[i].Id == ind {
-				taskList[i].Status = "in-progress"
-			}
-		}
+	// Mark To Do
+	case "mark-todo", "mark-in-progress", "mark-done":
+		app.markTask(inp)
 
-	case "mark-done":
-		ind, err := strconv.Atoi(inp[1])
-		if err != nil {
-			fmt.Println("Could not parse to int", err)
-		}
-		for i := 0; i < len(taskList); i++ {
-			if taskList[i]. Id = ind {
-				taskList[i].Status = "done"
-			}
-		}
-
+	// List Command
 	case "list":
-		if len(inp) < 2 {
-			inp = append(inp, "")
-		}
+		app.listTask(inp)
 
-		// Switch for print title
-
-		switch inp[1] {
-		case "done":
-			fmt.Println("Printing all done tasks.")
-		case "todo":
-			fmt.Println("- Printing TO-DO Tasks -")
-		case "in-progress":
-			fmt.Println("- Printing In Progress Tasks -")
-		case "":
-			fmt.Println("- Printing All Tasks -")
-		}
-
-		fmt.Println(" ID    Description               Status")
-
-		// For switch for list printing
-		for i := 0; i < len(taskList); i++ {
-			switch inp[1] {
-			case "done":
-				fmt.Println("Printing all done tasks.")
-			case "todo":
-				if taskList[i].Status == "todo" {
-					listPrint(taskList[i])
-				}
-			case "in-progress":
-				if taskList[i].Status == "in-progress" {
-					listPrint(taskList[i])
-				}
-			case "":
-				listPrint(taskList[i])
-			default:
-				invalidCommand()
-			}
-		}
-		return
-
+	// A just in case invalid command message
 	default:
 		invalidCommand()
 	}
 
-	app := &application{}
 	app.saveList()
 
 }
 
 func invalidCommand() {
-	fmt.Println("- Invalid command -\n Use these commands: \n  add - Adds new task\n  delete - Deletes a task\n  list - Lists all tasks\n  list done - Lists all done tasks\n  list todo - Lists all to-do tasks")
+	fmt.Println("   - Invalid Command -\n   Available commands: \n\n   add \"task_description\" - Creates a New Task")
+	fmt.Println("   delete task_id - Deletes a task\n\n   mark-todo task_id - Changes Task Status to 'To-Do'")
+	fmt.Println("   mark-in-progress task_id - Changes Task Status to 'In Progress'\n   mark-done task_id - Changes Task Status to 'Done'")
+	fmt.Println("\n   list - Lists all tasks")
+	fmt.Println("   list done - Lists all 'Done' tasks\n   list todo - Lists all 'To-Do' tasks")
+	fmt.Println("   list in-progress - Lists all 'In Progress' tasks")
 }
 
 func listPrint(t task) {
-	fmt.Printf(" %03d   %-23s   %-15s\n", t.Id, t.Descr, t.Status)
-}
+	fmt.Printf(" %03d   %-25s   %-15s   ", t.Id, t.Descr, t.Status)
+	fmt.Printf("%02d-%02d-%d %02d:%02d:%02d          ", t.TimeCreated.Day(), t.TimeCreated.Month(), t.TimeCreated.Year(), t.TimeCreated.Hour(), t.TimeCreated.Minute(), t.TimeCreated.Second())
+	fmt.Printf("%02d-%02d-%d %02d:%02d:%02d\n", t.TimeUpdated.Day(), t.TimeUpdated.Month(), t.TimeUpdated.Year(), t.TimeUpdated.Hour(), t.TimeUpdated.Minute(), t.TimeUpdated.Second())
 
-func getTime(t timeStruct) {
-	fmt.Printf("%d-%02d-%02d %02d:%02d:%02d\n", t.year, t.month, t.day, t.hour, t.minute, t.day)
-}
-
-func capitalizeFirst(line string) string {
-	tmp := strings.Split(line, "")
-	fLetter := strings.ToUpper(tmp[0])
-	tmp[0] = fLetter
-	wholeLine := strings.Join(tmp, "")
-	return wholeLine
-}
-
-type timeStruct struct {
-	year   int64
-	month  int64
-	day    int64
-	hour   int64
-	minute int64
-	second int64
 }
 
 type task struct {
 	Id          int
 	Descr       string
 	Status      string
-	TimeCreated timeStruct
-	TimeUpdated timeStruct
+	TimeCreated time.Time
+	TimeUpdated time.Time
 }
